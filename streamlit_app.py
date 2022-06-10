@@ -1,8 +1,8 @@
 import streamlit
 import pandas as pd
-import snowflake
+import snowflake.connector as conn
 streamlit.title('Streamlit App')
-my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
+my_cnx = conn.connect(**streamlit.secrets["snowflake"])
 
 my_cur = my_cnx.cursor()
 
