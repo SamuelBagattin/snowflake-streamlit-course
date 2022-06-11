@@ -1,15 +1,26 @@
+import numpy
+import pandas
 import streamlit
 import pandas as pd
-import snowflake.connector as conn
-streamlit.title('Streamlit App')
-my_cnx = conn.connect(**streamlit.secrets["snowflake"])
+import numpy as np
 
-my_cur = my_cnx.cursor()
+streamlit.title('Jobs')
 
-my_cur.execute("SELECT * from PC_RIVERY_DB.PUBLIC.FDC_FOOD_INGEST")
 
-my_data_row = my_cur.fetchall()
+def get_all_technologies(companies_local):
+    technologies = []
+    for company in companies_local:
+        technologies.append(company['MainTechnologies'])
+    return set(np.concatenate(numpy.array(technologies, dtype=object).flatten()).ravel())
 
-streamlit.text("Hello from Snowflake:")
 
-streamlit.dataframe(my_data_row)
+data = pd.read_json('https://jobs.samuelbagattin.com/index.json')
+companies = data['Companies']['Companies']
+technologies = get_all_technologies(companies)
+
+chosen_technologies = streamlit.multiselect('Filter by technology', technologies, default=[])
+filtered_companies = [company for company in companies if
+                      all(technology in company['MainTechnologies'] for technology in chosen_technologies)]
+
+companies_df = pandas.DataFrame(filtered_companies, columns=['CompanyName', 'MainTechnologies'])
+streamlit.dataframe(companies_df)
